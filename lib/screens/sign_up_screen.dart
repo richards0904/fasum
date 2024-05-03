@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fasum/screens/home_screen.dart';
-
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
-
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  SignUpScreenState createState() => SignUpScreenState();
 }
-
-class _SignUpScreenState extends State<SignUpScreen> {
+class SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,18 +39,43 @@ class _SignUpScreenState extends State<SignUpScreen> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () async {
-                try {
-                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                    email: _emailController.text,
-                    password: _passwordController.text,
+                final email = _emailController.text.trim();
+                final password = _passwordController.text.trim();
+                if (email.isEmpty || password.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please fill in allfields.')),
+                      );
+                          return;
+                          }
+                          try {
+                          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                          email: email,
+                          password: password,
+                          );
+                          Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => const
+                          HomeScreen()),
+                          );
+                          } on FirebaseAuthException catch (e) {
+                  if (e.code == 'weak-password') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('The password provided is too weak.')),
                   );
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  } else if (e.code == 'email-already-in-use') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('The account already exists for that email.')),
                   );
-                } catch (error) {
-                  print(error.toString());
-                }
-              },
+                  } else if (e.code == 'invalid-email') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('The email address is not valid.')),
+                  );
+                  }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('An error occurred: $e')),
+                    );
+                  }
+                },
               child: const Text('Sign Up'),
             ),
           ],

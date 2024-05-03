@@ -27,10 +27,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -44,38 +41,58 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBbb7gzTfTwWuBrdeN10U95HA20K05_ZJI',
-    appId: '1:928610520931:web:467e6bf8607a70e5428d56',
-    messagingSenderId: '928610520931',
-    projectId: 'fasum-app-9cf31',
-    authDomain: 'fasum-app-9cf31.firebaseapp.com',
-    storageBucket: 'fasum-app-9cf31.appspot.com',
-    measurementId: 'G-XQT43JF17B',
+    apiKey: 'AIzaSyAO3Herd2O5pIY2NpLuWk1Pw7NvUjV6NnM',
+    appId: '1:891233203501:web:2d87e5dab4080e20fd0fa4',
+    messagingSenderId: '891233203501',
+    projectId: 'fasum-app-7839a',
+    authDomain: 'fasum-app-7839a.firebaseapp.com',
+    databaseURL: 'https://fasum-app-7839a-default-rtdb.firebaseio.com',
+    storageBucket: 'fasum-app-7839a.appspot.com',
+    measurementId: 'G-5JPLF3QDR4',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBVhVJhix8RMGSbrud-grJNoqrUkebUe8g',
-    appId: '1:928610520931:android:edabf3e8af1a2049428d56',
-    messagingSenderId: '928610520931',
-    projectId: 'fasum-app-9cf31',
-    storageBucket: 'fasum-app-9cf31.appspot.com',
+    apiKey: 'AIzaSyBPdF7kXtumgZnAe8DihqlX6Uqwj1JXbwU',
+    appId: '1:891233203501:android:12ff24d522a5d6b8fd0fa4',
+    messagingSenderId: '891233203501',
+    projectId: 'fasum-app-7839a',
+    databaseURL: 'https://fasum-app-7839a-default-rtdb.firebaseio.com',
+    storageBucket: 'fasum-app-7839a.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCBJrtpoZ8A-uPYC2R8_dEyM9VtxvD9q-U',
-    appId: '1:928610520931:ios:f62e867b983e86e7428d56',
-    messagingSenderId: '928610520931',
-    projectId: 'fasum-app-9cf31',
-    storageBucket: 'fasum-app-9cf31.appspot.com',
+    apiKey: 'AIzaSyDxs9N23niTGzV6Vk-NXj4-7nb7sq1H2D0',
+    appId: '1:891233203501:ios:fc743ae692ae0b94fd0fa4',
+    messagingSenderId: '891233203501',
+    projectId: 'fasum-app-7839a',
+    databaseURL: 'https://fasum-app-7839a-default-rtdb.firebaseio.com',
+    storageBucket: 'fasum-app-7839a.appspot.com',
+    androidClientId: '891233203501-b16lioubhvp8e1dom0mft8pn0u6jq323.apps.googleusercontent.com',
+    iosClientId: '891233203501-g7s803apohntuvcef4oj3kfqf47uvegc.apps.googleusercontent.com',
     iosBundleId: 'com.example.fasum',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCBJrtpoZ8A-uPYC2R8_dEyM9VtxvD9q-U',
-    appId: '1:928610520931:ios:3d398d45a6477197428d56',
-    messagingSenderId: '928610520931',
-    projectId: 'fasum-app-9cf31',
-    storageBucket: 'fasum-app-9cf31.appspot.com',
-    iosBundleId: 'com.example.fasum.RunnerTests',
+    apiKey: 'AIzaSyDxs9N23niTGzV6Vk-NXj4-7nb7sq1H2D0',
+    appId: '1:891233203501:ios:fc743ae692ae0b94fd0fa4',
+    messagingSenderId: '891233203501',
+    projectId: 'fasum-app-7839a',
+    databaseURL: 'https://fasum-app-7839a-default-rtdb.firebaseio.com',
+    storageBucket: 'fasum-app-7839a.appspot.com',
+    androidClientId: '891233203501-b16lioubhvp8e1dom0mft8pn0u6jq323.apps.googleusercontent.com',
+    iosClientId: '891233203501-g7s803apohntuvcef4oj3kfqf47uvegc.apps.googleusercontent.com',
+    iosBundleId: 'com.example.fasum',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyAO3Herd2O5pIY2NpLuWk1Pw7NvUjV6NnM',
+    appId: '1:891233203501:web:a2e9b4c20849cbf7fd0fa4',
+    messagingSenderId: '891233203501',
+    projectId: 'fasum-app-7839a',
+    authDomain: 'fasum-app-7839a.firebaseapp.com',
+    databaseURL: 'https://fasum-app-7839a-default-rtdb.firebaseio.com',
+    storageBucket: 'fasum-app-7839a.appspot.com',
+    measurementId: 'G-8EWX15KF99',
+  );
+
 }
