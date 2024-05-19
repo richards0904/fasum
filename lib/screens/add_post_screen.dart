@@ -1,7 +1,9 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddPostScreen extends StatefulWidget {
   @override
@@ -9,29 +11,54 @@ class AddPostScreen extends StatefulWidget {
 }
 
 class _AddPostScreenState extends State<AddPostScreen> {
-  final _textController = TextEditingController();
-  late File _image;
-  final DatabaseReference _database =
-      FirebaseDatabase.instance.ref().child('postingan');
-
-  @override
-  void initState() {
-    super.initState();
-    _image = File('');
-  }
-
+  File? _image;
   final picker = ImagePicker();
-  Future<void> _getImage() async {
+  final TextEditingController _descriptionController = TextEditingController();
+
+  Future getImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
+
+    setState(() {
+      if (pickedFile != null) {
         _image = File(pickedFile.path);
-      });
-    }
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 
-  Future<void> _savePost() async {
-    _database.push().set({'name': _textController, 'image': _image});
+  Future<void> _uploadPost() async {
+    if (_image == null || _descriptionController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Image and description are required')),
+      );
+      return;
+    }
+
+    String imageUrl;
+    try {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('post_images')
+          .child('${DateTime.now()}.jpg');
+      await ref.putFile(_image!);
+      imageUrl = await ref.getDownloadURL();
+    } catch (e) {
+      print(e);
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    final username = user?.email ?? 'Anonymous';
+
+    FirebaseFirestore.instance.collection('posts').add({
+      'imageUrl': imageUrl,
+      'description': _descriptionController.text,
+      'timestamp': Timestamp.now(),
+      'username':
+          username, // Hardcoded username, you can replace this with actual user data
+    });
+
     Navigator.pop(context);
   }
 
@@ -39,41 +66,30 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Post'),
+        title: Text('Add Post'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: _getImage,
-              child: Container(
-                height: 200,
-                width: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: _image.path.isNotEmpty
-                    ? Image.file(_image)
-                    : const Icon(Icons.camera_alt, size: 50),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              GestureDetector(
+                onTap: getImage,
+                child: _image == null
+                    ? Icon(Icons.camera_alt, size: 100)
+                    : Image.file(_image!),
               ),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _textController,
-              decoration: const InputDecoration(
-                labelText: 'Post text',
-                border: OutlineInputBorder(),
+              TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
               ),
-              maxLines: null,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _savePost,
-              child: const Text('Post'),
-            ),
-          ],
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _uploadPost,
+                child: Text('Post'),
+              ),
+            ],
+          ),
         ),
       ),
     );
