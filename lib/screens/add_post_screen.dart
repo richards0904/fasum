@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fasum/location.dart';
 
 class AddPostScreen extends StatefulWidget {
   @override
@@ -11,16 +14,43 @@ class AddPostScreen extends StatefulWidget {
 }
 
 class _AddPostScreenState extends State<AddPostScreen> {
-  File? _image;
+  XFile? _image;
+  Uint8List? _webImage;
   final picker = ImagePicker();
   final TextEditingController _descriptionController = TextEditingController();
+  Position? _currentPosition;
+
+  bool _isLocationEnabled =
+      false; // Add a flag to track if location is obtained
+
+  // Function to update current position
+  void _updateLocation(Position? position) {
+    setState(() {
+      _currentPosition = position;
+      _isLocationEnabled = true; // Update flag when location is obtained
+    });
+  }
+
+  // Function to validate if all required fields are filled
+  bool _validateFields() {
+    return _image != null &&
+        _descriptionController.text.isNotEmpty &&
+        _isLocationEnabled; // Ensure location is enabled
+  }
 
   Future getImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     setState(() {
       if (pickedFile != null) {
-        _image = File(pickedFile.path);
+        _image = pickedFile;
+        if (kIsWeb) {
+          pickedFile.readAsBytes().then((value) {
+            setState(() {
+              _webImage = value;
+            });
+          });
+        }
       } else {
         print('No image selected.');
       }
@@ -28,9 +58,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
   }
 
   Future<void> _uploadPost() async {
-    if (_image == null || _descriptionController.text.isEmpty) {
+    if (!_validateFields()) {
+      // Check if all required fields are filled
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Image and description are required')),
+        SnackBar(content: Text('Please fill all required fields')),
       );
       return;
     }
@@ -41,7 +72,15 @@ class _AddPostScreenState extends State<AddPostScreen> {
           .ref()
           .child('post_images')
           .child('${DateTime.now()}.jpg');
-      await ref.putFile(_image!);
+
+      if (kIsWeb) {
+        final metadata = SettableMetadata(contentType: 'image/jpeg');
+        await ref.putData(_webImage!, metadata);
+      } else {
+        final file = File(_image!.path);
+        await ref.putFile(file);
+      }
+
       imageUrl = await ref.getDownloadURL();
     } catch (e) {
       print(e);
@@ -55,8 +94,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
       'imageUrl': imageUrl,
       'description': _descriptionController.text,
       'timestamp': Timestamp.now(),
-      'username':
-          username, // Hardcoded username, you can replace this with actual user data
+      'username': username,
+      if (_currentPosition != null)
+        'location':
+            GeoPoint(_currentPosition!.latitude, _currentPosition!.longitude),
     });
 
     Navigator.pop(context);
@@ -77,12 +118,17 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 onTap: getImage,
                 child: _image == null
                     ? Icon(Icons.camera_alt, size: 100)
-                    : Image.file(_image!),
+                    : kIsWeb
+                        ? Image.memory(_webImage!)
+                        : Image.file(File(_image!.path)),
               ),
               TextField(
                 controller: _descriptionController,
                 decoration: InputDecoration(labelText: 'Description'),
               ),
+              SizedBox(height: 20),
+              LocationWidget(
+                  onLocationChanged: _updateLocation), // Add LocationWidget
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _uploadPost,
